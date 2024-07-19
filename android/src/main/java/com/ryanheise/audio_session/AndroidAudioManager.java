@@ -449,7 +449,11 @@ public class AndroidAudioManager implements MethodCallHandler {
             return null;
         }
         private Object isSpeakerphoneOn() {
-            return audioManager.isSpeakerphoneOn();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                return audioManager.getCommunicationDevice().getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
+            } else {
+                return audioManager.isSpeakerphoneOn();
+            }
         }
         private Object setAllowedCapturePolicy(int capturePolicy) {
             requireApi(29);
@@ -464,11 +468,25 @@ public class AndroidAudioManager implements MethodCallHandler {
             return audioManager.isBluetoothScoAvailableOffCall();
         }
         private Object startBluetoothSco() {
-            audioManager.startBluetoothSco();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                List<AudioDeviceInfo> list = audioManager.getAvailableCommunicationDevices();
+                for (AudioDeviceInfo device : list) {
+                    if (device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                        audioManager.setCommunicationDevice(device);
+                        break;
+                    }
+                }
+            } else {
+                audioManager.startBluetoothSco();
+            }
             return null;
         }
         private Object stopBluetoothSco() {
-            audioManager.stopBluetoothSco();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                audioManager.clearCommunicationDevice();
+            } else {
+                audioManager.stopBluetoothSco();
+            }
             return null;
         }
         private Object setBluetoothScoOn(boolean enabled) {
@@ -476,7 +494,11 @@ public class AndroidAudioManager implements MethodCallHandler {
             return null;
         }
         private Object isBluetoothScoOn() {
-            return audioManager.isBluetoothScoOn();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                return audioManager.getCommunicationDevice().getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO;
+            } else {
+                return audioManager.isBluetoothScoOn();
+            }
         }
         private Object setMicrophoneMute(boolean enabled) {
             audioManager.setMicrophoneMute(enabled);
